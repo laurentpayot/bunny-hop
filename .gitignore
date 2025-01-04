@@ -1,0 +1,8 @@
+# F#
+.fake/
+bin/
+obj/
+output/
+
+# Notebooks
+datasets/

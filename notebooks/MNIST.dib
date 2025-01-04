@@ -1,0 +1,93 @@
+#!meta
+
+{"kernelInfo":{"defaultKernelName":"csharp","items":[{"aliases":[],"name":"csharp"},{"aliases":[],"languageName":"fsharp","name":"fsharp"}]}}
+
+#!markdown
+
+# Bunny Hop MNIST digits example
+
+#!markdown
+
+## Setup
+
+#!fsharp
+
+#r "nuget: Plotly.NET"
+#r "nuget: Plotly.NET.Interactive"
+
+open Plotly.NET
+
+#!fsharp
+
+// #r "../output/bin/Debug/net9.0/bunny-hop.dll" // to be used after `dotnet build` (dependencies included)
+#load "../src/BunnyHop.fs"
+#load "../src/Tools.fs"
+
+open BunnyHop
+open Tools
+
+#!fsharp
+
+// let labels, images = loadMnistCsvUnsafeOrder "datasets/mnist_train.csv"
+let labels, images = loadMnistCsvUnsafeOrder "datasets/mnist_train_head.csv"
+printfn $"Images: {Array.length images}"
+
+#!fsharp
+
+let model = init {
+    inputBools = 28 * 28
+    outputs = 10
+    layerNodes = 128
+    layers = 3
+    learningRate = 0.2
+    threshold = 0
+    seed = Some(123456)
+}
+
+#!fsharp
+
+// showLayerWeights "Initial Input Layer Weights" model.inputLayerWeights
+
+#!fsharp
+
+let boolImages = byteToBoolRowsBinarized 200uy images
+
+#!markdown
+
+## Training
+
+#!fsharp
+
+let N = 10
+let model = model |> fit boolImages[0..(N - 1)] labels[0..(N - 1)] 100
+
+#!fsharp
+
+showHistory model
+
+#!fsharp
+
+showLayerWeights "Input Layer Weights" model.inputLayerWeights
+
+#!fsharp
+
+for i in [0 .. model.hiddenLayersWeights.Length - 1] do
+    showLayerWeights $"Hidden Layer {i} Weights" model.hiddenLayersWeights[i] |> ignore
+
+#!fsharp
+
+showLayerWeights "Output layer weights" model.outputLayerWeights
+
+#!fsharp
+
+printfn $"Last digit: {labels[N-1]}"
+showRowDigit images[N-1]
+showRowDigitBinarized 200uy images[N-1]
+
+#!fsharp
+
+showIntermediateActivations "Last Intermediate Activations" model.lastPrediction.intermediateActivations
+
+#!fsharp
+
+showOutputs $"Last Digit Choice: {model.lastPrediction.result}" model.lastPrediction.outputs
