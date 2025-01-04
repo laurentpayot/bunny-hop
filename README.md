@@ -1,2 +1,3 @@
-# bunny-hop
+# 🐇 bunny-hop
+
 An *experimental* Hopfield network implementation
